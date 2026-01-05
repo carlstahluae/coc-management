@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/x-icon" href="https://www.carlstahl.com/images/favicon.ico" />
+    <title>CoC Management System</title>
+    <style>
+        /* =====================================================
+           CSS RESET & VARIABLES
+        ===================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* KSA Green Theme */
+            --ksa-primary: #2d6a4f;
+            --ksa-secondary: #40916c;
+            --ksa-light: #95d5b2;
+            --ksa-bg: #f1f8f4;
+            
+            /* UAE Red Theme */
+            --uae-primary: #9b2226;
+            --uae-secondary: #bb3e03;
+            --uae-light: #ee9b00;
+            --uae-bg: #fef6f4;
+            
+            /* Neutral Colors */
+            --sidebar-bg: #1a1d29;
+            --sidebar-hover: #252936;
+            --topbar-bg: #ffffff;
+            --content-bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.2);
+            
+            /* Sidebar Width */
+            --sidebar-width: 280px;
+            --topbar-height: 70px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--content-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* =====================================================
+           LAYOUT STRUCTURE
+        ===================================================== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-logo {
+            height: 45px;
+            width: auto;
+            filter: brightness(0) invert(1);
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1.3;
+            opacity: 0.95;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0 1.5rem 0.75rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 600;
+        }
+
+        .nav-item {
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+            border-left-color: rgba(255,255,255,0.3);
+        }
+
+        .nav-item.active {
+            background: var(--sidebar-hover);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.active.dashboard {
+            border-left-color: #3b82f6;
+        }
+
+        .nav-item.active.ksa {
+            border-left-color: var(--ksa-light);
+        }
+
+        .nav-item.active.uae {
+            border-left-color: var(--uae-light);
+        }
+
+        .nav-item-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item-text {
+            flex: 1;
+        }
+
+        .nav-item-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 0.125rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .nav-submenu {
+            display: none;
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem 0;
+            margin-top: 0.25rem;
+        }
+
+        .nav-submenu.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .nav-submenu-item {
+            padding: 0.75rem 1.5rem 0.75rem 3.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+        }
+
+        .nav-submenu-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            padding-left: 3.75rem;
+        }
+
+        .nav-submenu-item.active {
+            color: white;
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* =====================================================
+           MAIN CONTENT AREA
+        ===================================================== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* =====================================================
+           TOP BAR
+        ===================================================== */
+        .topbar {
+            height: var(--topbar-height);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar-left h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .topbar-left p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.125rem;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--content-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .topbar-user:hover {
+            background: #e2e8f0;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* =====================================================
+           CONTENT AREA
+        ===================================================== */
+        .content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        /* =====================================================
+           DASHBOARD
+        ===================================================== */
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-header h2 {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card.blue {
+            border-left-color: #3b82f6;
+        }
+
+        .stat-card.green {
+            border-left-color: var(--ksa-secondary);
+        }
+
+        .stat-card.red {
+            border-left-color: var(--uae-secondary);
+        }
+
+        .stat-card.orange {
+            border-left-color: #f59e0b;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-card.blue .stat-icon {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .stat-card.green .stat-icon {
+            background: var(--ksa-bg);
+            color: var(--ksa-primary);
+        }
+
+        .stat-card.red .stat-icon {
+            background: var(--uae-bg);
+            color: var(--uae-primary);
+        }
+
+        .stat-card.orange .stat-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        /* =====================================================
+           REGION SECTIONS (KSA & UAE)
+        ===================================================== */
+        .region-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .region-header.ksa {
+            background: linear-gradient(135deg, var(--ksa-primary) 0%, var(--ksa-secondary) 100%);
+            color: white;
+        }
+
+        .region-header.uae {
+            background: linear-gradient(135deg, var(--uae-primary) 0%, var(--uae-secondary) 100%);
+            color: white;
+        }
+
+        .region-icon {
+            font-size: 3rem;
+        }
+
+        .region-info h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .region-info p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .action-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .action-card.ksa::before {
+            background: linear-gradient(90deg, var(--ksa-primary), var(--ksa-light));
+        }
+
+        .action-card.uae::before {
+            background: linear-gradient(90deg, var(--uae-primary), var(--uae-light));
+        }
+
+        .action-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .action-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .action-card.ksa:hover {
+            border-color: var(--ksa-light);
+            background: var(--ksa-bg);
+        }
+
+        .action-card.uae:hover {
+            border-color: var(--uae-light);
+            background: var(--uae-bg);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+
+        .action-card:hover .action-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .action-card.ksa .action-icon {
+            background: linear-gradient(135deg, var(--ksa-primary), var(--ksa-secondary));
+            color: white;
+        }
+
+        .action-card.uae .action-icon {
+            background: linear-gradient(135deg, var(--uae-primary), var(--uae-secondary));
+            color: white;
+        }
+
+        .action-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .action-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .action-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-badge {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .action-card.ksa .action-badge {
+            background: var(--ksa-bg);
+            color: var(--ksa-primary);
+        }
+
+        .action-card.uae .action-badge {
+            background: var(--uae-bg);
+            color: var(--uae-primary);
+        }
+
+        .action-arrow {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .action-card:hover .action-arrow {
+            transform: translateX(5px);
+            opacity: 1;
+        }
+
+        .action-card.ksa:hover .action-arrow {
+            color: var(--ksa-primary);
+        }
+
+        .action-card.uae:hover .action-arrow {
+            color: var(--uae-primary);
+        }
+
+        /* =====================================================
+           ANIMATIONS
+        ===================================================== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
+        /* =====================================================
+           MOBILE RESPONSIVE
+        ===================================================== */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 56px;
+            height: 56px;
+            background: var(--sidebar-bg);
+            color: white;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-xl);
+            z-index: 999;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: flex;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 0 1rem;
+            }
+
+            .topbar-left h1 {
+                font-size: 1.25rem;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .dashboard-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- =====================================================
+             SIDEBAR
+        ===================================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="https://www.carlstahl.com/images/logo/CarlStahl_Logo_RGB.svg" alt="Carl Stahl" class="sidebar-logo">
+                <div class="sidebar-title">CoC Management System</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- Dashboard -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item active dashboard" onclick="showSection('dashboard')">
+                        <span class="nav-item-icon">📊</span>
+                        <span class="nav-item-text">Dashboard</span>
+                    </div>
+                </div>
+
+                <!-- KSA Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Kingdom of Saudi Arabia</div>
+                    
+                    <div class="nav-item ksa" onclick="toggleSubmenu('ksa-generation')">
+                        <span class="nav-item-icon">🇸🇦</span>
+                        <span class="nav-item-text">KSA CoC Generation</span>
+                        <span class="nav-item-badge">1</span>
+                    </div>
+                    <div class="nav-submenu" id="ksa-generation">
+                        <div class="nav-submenu-item" onclick="showSection('ksa-coc-generation')">
+                            <span>📝</span>
+                            <span>Generate CoC Certificate</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-item ksa" onclick="toggleSubmenu('ksa-verification')">
+                        <span class="nav-item-icon">✓</span>
+                        <span class="nav-item-text">KSA CoC Verification</span>
+                        <span class="nav-item-badge">2</span>
+                    </div>
+                    <div class="nav-submenu" id="ksa-verification">
+                        <div class="nav-submenu-item" onclick="showSection('ksa-customer-verify')">
+                            <span>👥</span>
+                            <span>Customer Verification</span>
+                        </div>
+                        <div class="nav-submenu-item" onclick="showSection('ksa-backoffice-verify')">
+                            <span>🔍</span>
+                            <span>Backoffice Verification</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UAE Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">United Arab Emirates</div>
+                    
+                    <div class="nav-item uae" onclick="toggleSubmenu('uae-generation')">
+                        <span class="nav-item-icon">🇦🇪</span>
+                        <span class="nav-item-text">UAE CoC Generation</span>
+                        <span class="nav-item-badge">3</span>
+                    </div>
+                    <div class="nav-submenu" id="uae-generation">
+                        <div class="nav-submenu-item" onclick="showSection('uae-dubai-general')">
+                            <span>📋</span>
+                            <span>Dubai - General CoC</span>
+                        </div>
+                        <div class="nav-submenu-item" onclick="showSection('uae-abudhabi-general')">
+                            <span>📄</span>
+                            <span>Abu Dhabi - General CoC</span>
+                        </div>
+                        <div class="nav-submenu-item" onclick="showSection('uae-abudhabi-dnv')">
+                            <span>🏅</span>
+                            <span>Abu Dhabi - DNV Type</span>
+                        </div>
+                    </div>
+
+                    <div class="nav-item uae" onclick="toggleSubmenu('uae-verification')">
+                        <span class="nav-item-icon">✓</span>
+                        <span class="nav-item-text">UAE CoC Verification</span>
+                        <span class="nav-item-badge">2</span>
+                    </div>
+                    <div class="nav-submenu" id="uae-verification">
+                        <div class="nav-submenu-item" onclick="showSection('uae-customer-verify')">
+                            <span>👥</span>
+                            <span>Customer Verification</span>
+                        </div>
+                        <div class="nav-submenu-item" onclick="showSection('uae-backoffice-verify')">
+                            <span>🔍</span>
+                            <span>Backoffice Verification</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- =====================================================
+             MAIN CONTENT
+        ===================================================== -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="pageSubtitle">Overview of all CoC operations</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-user">
+                        <div class="user-avatar">AD</div>
+                        <div class="user-info">
+                            <div class="user-name">Rahul/Shebin</div>
+                            <div class="user-role">System Administrator</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content">
+                <!-- DASHBOARD SECTION -->
+                <section class="content-section active" id="dashboard">
+                    <div class="dashboard-header">
+                        <h2>Welcome to CoC Management System</h2>
+                        <p>Manage and verify certificates across KSA and UAE operations</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card blue">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value">10</div>
+                                    <div class="stat-label">Total Certificates</div>
+                                </div>
+                                <div class="stat-icon">📊</div>
+                            </div>
+                            <div class="stat-trend trend-up">↑ 1% from last month</div>
+                        </div>
+
+                        <div class="stat-card green">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value">5</div>
+                                    <div class="stat-label">KSA Certificates</div>
+                                </div>
+                                <div class="stat-icon">🇸🇦</div>
+                            </div>
+                            <div class="stat-trend trend-up">↑ 2% from last month</div>
+                        </div>
+
+                        <div class="stat-card red">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value">5</div>
+                                    <div class="stat-label">UAE Certificates</div>
+                                </div>
+                                <div class="stat-icon">🇦🇪</div>
+                            </div>
+                            <div class="stat-trend trend-up">↑ 15% from last month</div>
+                        </div>
+
+                        <div class="stat-card orange">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value">80.5%</div>
+                                    <div class="stat-label">Verification Rate</div>
+                                </div>
+                                <div class="stat-icon">✓</div>
+                            </div>
+                            <div class="stat-trend trend-up">↑ 2% from last month</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Quick Actions</h3>
+                        <div class="action-grid">
+                            <div class="action-card ksa" onclick="showSection('ksa-coc-generation')">
+                                <div class="action-icon">📝</div>
+                                <div class="action-title">Generate KSA CoC</div>
+                                <div class="action-description">Create new Certificate of Conformity for Saudi operations</div>
+                                <div class="action-footer">
+                                    <span class="action-badge">Generate</span>
+                                    <span class="action-arrow">→</span>
+                                </div>
+                            </div>
+
+                            <div class="action-card uae" onclick="showSection('uae-dubai-general')">
+                                <div class="action-icon">📋</div>
+                                <div class="action-title">Generate UAE CoC</div>
+                                <div class="action-description">Create new Certificate of Conformity for UAE operations</div>
+                                <div class="action-footer">
+                                    <span class="action-badge">Generate</span>
+                                    <span class="action-arrow">→</span>
+                                </div>
+                            </div>
+
+                            <div class="action-card ksa" onclick="showSection('ksa-customer-verify')">
+                                <div class="action-icon">✓</div>
+                                <div class="action-title">Verify Certificate</div>
+                                <div class="action-description">Verify authenticity of issued certificates</div>
+                                <div class="action-footer">
+                                    <span class="action-badge">Verify</span>
+                                    <span class="action-arrow">→</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                    
+                <!-- KSA COC GENERATION -->
+                <section class="content-section" id="ksa-coc-generation">
+                
+                <div class="region-header ksa">
+                    <div class="region-icon">🇸🇦</div>
+                    <div class="region-info">
+                    <h2>KSA CoC Generation</h2>
+                    <p>Carl Stahl For Industry - Kingdom of Saudi Arabia</p>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <div class="action-card ksa" onclick="window.open('https://docs.google.com/spreadsheets/d/1etQ0Usae2SlUfGZNI0sqsXgtKhUXB9jqwT8pVgBAl5M/edit?gid=653171769#gid=653171769/', '_blank')" style="cursor: pointer;">
+                    <div class="action-icon">📝</div>
+                    <div class="action-title">Generate New Certificate</div>
+                    <div class="action-description">
+                        Create a new Certificate of Conformity for products and services complying with Saudi standards and regulations.
+                    </div>
+                    <div class="action-footer">
+                        <span class="action-badge">Start</span>
+                        <span class="action-arrow">→</span>
+                    </div>
+                    </div>
+                </div>
+
+                </section>
+
+                    
+            <!-- KSA CUSTOMER VERIFICATION -->
+            <section class="content-section" id="ksa-customer-verify">
+                <div class="region-header ksa">
+                    <div class="region-icon">👥</div>
+                    <div class="region-info">
+                        <h2>KSA Customer Verification</h2>
+                        <p>Public portal for certificate authentication</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card ksa" onclick="window.open('https://carlstahluae.github.io/coc-ksa-portal/', '_blank')" style="cursor: pointer;">
+                        <div class="action-icon">🔎</div>
+                        <div class="action-title">Verify Certificate</div>
+                        <div class="action-description">Enter certificate number to verify authenticity and view certificate details issued by Carl Stahl KSA.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Verify</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- KSA BACKOFFICE VERIFICATION -->
+            <section class="content-section" id="ksa-backoffice-verify">
+                <div class="region-header ksa">
+                    <div class="region-icon">🔍</div>
+                    <div class="region-info">
+                        <h2>KSA Backoffice Verification</h2>
+                        <p>Internal verification and management system</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card ksa">
+                        <div class="action-icon">🗂️</div>
+                        <div class="action-title">Certificate Database</div>
+                        <div class="action-description">Access complete database of issued certificates with advanced search and filtering capabilities.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Access</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                    <div class="action-card ksa">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Analytics & Reports</div>
+                        <div class="action-description">Generate comprehensive reports and analytics on certificate issuance and verification trends.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">View</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UAE DUBAI GENERAL -->
+            <section class="content-section" id="uae-dubai-general">
+                <div class="region-header uae">
+                    <div class="region-icon">🇦🇪</div>
+                    <div class="region-info">
+                        <h2>Dubai - General CoC</h2>
+                        <p>Carl Stahl Lifting Equipment Industries LLC - Dubai</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <a href="https://docs.google.com/spreadsheets/d/18i91JzqPRUWwP3c1gAT2CgSOS8CzcS5eZxQnNgRCSE0/edit?gid=653171769#gid=653171769" target="_blank" rel="noopener noreferrer" class="action-card uae" style="text-decoration: none; color: inherit;">
+                        <div class="action-icon">📋</div>
+                        <div class="action-title">Generate General CoC</div>
+                        <div class="action-description">Create General Certificates of Conformity for lifting equipment manufactured in Dubai operations.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Start</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- UAE ABU DHABI GENERAL -->
+            <section class="content-section" id="uae-abudhabi-general">
+                <div class="region-header uae">
+                    <div class="region-icon">🇦🇪</div>
+                    <div class="region-info">
+                        <h2>Abu Dhabi - General CoC</h2>
+                        <p>Carl Stahl Lifting Equipment Trading LLC - Abu Dhabi</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card uae">
+                        <div class="action-icon">📄</div>
+                        <div class="action-title">Generate General CoC</div>
+                        <div class="action-description">Create General Certificates of Conformity for trading operations based in Abu Dhabi.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Start</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UAE ABU DHABI DNV -->
+            <section class="content-section" id="uae-abudhabi-dnv">
+                <div class="region-header uae">
+                    <div class="region-icon">🏅</div>
+                    <div class="region-info">
+                        <h2>Abu Dhabi - DNV Type Approval</h2>
+                        <p>Carl Stahl Lifting Equipment Trading LLC - Abu Dhabi</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card uae">
+                        <div class="action-icon">🏅</div>
+                        <div class="action-title">Generate DNV Type Approval CoC</div>
+                        <div class="action-description">Create DNV Type Approval Certificates of Conformity for certified lifting equipment with international standards.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">DNV Type</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UAE CUSTOMER VERIFICATION -->
+            <section class="content-section" id="uae-customer-verify">
+                <div class="region-header uae">
+                    <div class="region-icon">👥</div>
+                    <div class="region-info">
+                        <h2>UAE Customer Verification</h2>
+                        <p>Public portal for certificate authentication</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card uae" onclick="window.open('https://carlstahluae.github.io/coc-uae-portal/', '_blank')" style="cursor: pointer;">
+                        <div class="action-icon">🔎</div>
+                        <div class="action-title">Verify Certificate</div>
+                        <div class="action-description">Enter certificate number to verify authenticity and view certificate details issued by Carl Stahl UAE.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Verify</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UAE BACKOFFICE VERIFICATION -->
+            <section class="content-section" id="uae-backoffice-verify">
+                <div class="region-header uae">
+                    <div class="region-icon">🔍</div>
+                    <div class="region-info">
+                        <h2>UAE Backoffice Verification</h2>
+                        <p>Internal verification and management system</p>
+                    </div>
+                </div>
+                <div class="action-grid">
+                    <div class="action-card uae">
+                        <div class="action-icon">🗂️</div>
+                        <div class="action-title">Certificate Database</div>
+                        <div class="action-description">Access complete database of issued certificates with advanced search and filtering capabilities.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">Access</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                    <div class="action-card uae">
+                        <div class="action-icon">📊</div>
+                        <div class="action-title">Analytics & Reports</div>
+                        <div class="action-description">Generate comprehensive reports and analytics on certificate issuance and verification trends.</div>
+                        <div class="action-footer">
+                            <span class="action-badge">View</span>
+                            <span class="action-arrow">→</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<!-- Mobile Toggle Button -->
+<div class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">☰</div>
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+<script>
+    // Navigation State
+    let currentSection = 'dashboard';
+
+    /**
+     * Show specific content section
+     */
+    function showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show selected section
+        document.getElementById(sectionId).classList.add('active');
+
+        // Update nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        document.querySelectorAll('.nav-submenu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Update page title based on section
+        const titles = {
+            'dashboard': { title: 'Dashboard', subtitle: 'Overview of all CoC operations' },
+            'ksa-coc-generation': { title: 'KSA CoC Generation', subtitle: 'Generate certificates for Saudi Arabia' },
+            'ksa-customer-verify': { title: 'KSA Customer Verification', subtitle: 'Verify certificates - Customer portal' },
+            'ksa-backoffice-verify': { title: 'KSA Backoffice Verification', subtitle: 'Internal verification system' },
+            'uae-dubai-general': { title: 'Dubai General CoC', subtitle: 'Generate certificates - Dubai operations' },
+            'uae-abudhabi-general': { title: 'Abu Dhabi General CoC', subtitle: 'Generate certificates - Abu Dhabi operations' },
+            'uae-abudhabi-dnv': { title: 'Abu Dhabi DNV Type Approval', subtitle: 'Generate DNV certified certificates' },
+            'uae-customer-verify': { title: 'UAE Customer Verification', subtitle: 'Verify certificates - Customer portal' },
+            'uae-backoffice-verify': { title: 'UAE Backoffice Verification', subtitle: 'Internal verification system' }
+        };
+
+        if (titles[sectionId]) {
+            document.getElementById('pageTitle').textContent = titles[sectionId].title;
+            document.getElementById('pageSubtitle').textContent = titles[sectionId].subtitle;
+        }
+
+        // Close mobile sidebar
+        if (window.innerWidth <= 1024) {
+            document.getElementById('sidebar').classList.remove('mobile-active');
+        }
+
+        currentSection = sectionId;
+    }
+
+    /**
+     * Toggle submenu
+     */
+    function toggleSubmenu(menuId) {
+        const submenu = document.getElementById(menuId);
+        const isActive = submenu.classList.contains('active');
+
+        // Close all submenus
+        document.querySelectorAll('.nav-submenu').forEach(menu => {
+            menu.classList.remove('active');
+        });
+
+        // Toggle selected submenu
+        if (!isActive) {
+            submenu.classList.add('active');
+        }
+    }
+
+    /**
+     * Toggle mobile sidebar
+     */
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('mobile-active');
+    }
+
+    /**
+     * Initialize on page load
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click handlers to action cards
+        document.querySelectorAll('.action-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const section = this.getAttribute('onclick');
+                if (section && section.includes('showSection')) {
+                    // Visual feedback
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 100);
+                }
+            });
+        });
+
+        // Close sidebar on outside click (mobile)
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('mobileToggle');
+            
+            if (window.innerWidth <= 1024 && 
+                sidebar.classList.contains('mobile-active') &&
+                !sidebar.contains(event.target) &&
+                !toggle.contains(event.target)) {
+                sidebar.classList.remove('mobile-active');
+            }
+        });
+    });
+</script>
+</body>
+</html></parameter>
